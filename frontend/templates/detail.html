@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Detail Hero Section -->
+<div class="hero-section mb-5 position-relative anime-cover-container" data-mal-id="{{ anime.mal_id }}" style="min-height: 600px; background-color: #1a1a1a; background-size: cover; background-position: center; overflow: visible !important;">
+    <div class="loading-spinner position-absolute top-50 start-50 translate-middle text-muted">
+        <i class="fa-solid fa-spinner fa-spin fa-3x"></i>
+    </div>
+    <div class="hero-overlay d-flex flex-column p-0" style="background: linear-gradient(0deg, rgba(10,10,15,1) 0%, rgba(10,10,15,0.8) 50%, rgba(10,10,15,0.6) 100%); width: 100%; position: relative !important;">
+        <div class="content-wrapper" style="max-width: 1000px; position: relative; z-index: 2; padding: 120px 50px 80px 50px;">
+            <p class="text-primary fw-bold mb-2"><a href="{{ url_for('home') }}" class="text-decoration-none text-muted transition-all hover-white"><i class="fa-solid fa-arrow-left me-2"></i>Go Back</a></p>
+            <h1 class="display-3 fw-bold text-white mb-1" style="text-shadow: 2px 2px 15px rgba(0,0,0,0.9); line-height: 1.1;">
+                {{ anime.english_name if anime.english_name and anime.english_name != 'Unknown' else anime.title }}
+            </h1>
+            {% if anime.japanese_name and anime.japanese_name != 'Unknown' %}
+            <p class="text-muted fs-5 mb-3">{{ anime.japanese_name }}</p>
+            {% endif %}
+            <div class="d-flex align-items-center mb-4 text-light gap-3 flex-wrap">
+                <span class="badge bg-primary fs-6 py-2 px-3">{{ anime.genres.split(',')[0] if anime.genres else 'Unknown' }}</span>
+                <span class="text-warning fs-5 fw-bold"><i class="fa-solid fa-star me-1"></i> {{ "%.1f"|format(anime.score) if anime.score else 'N/A' }}<span class="text-muted fs-6">/10</span></span>
+                <span class="text-muted fs-6"><i class="fa-solid fa-hashtag me-1"></i>ID: {{ anime.mal_id }}</span>
+            </div>
+            <p class="text-light fs-5 mb-3" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">
+                <strong>All Genres:</strong> {{ anime.genres if anime.genres else 'No genre information available.' }}
+            </p>
+            
+            {% if anime.synopsis %}
+            <div class="synopsis-section mb-5" style="max-width: 900px;">
+                <p class="text-primary mb-2 fw-bold" style="letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem; opacity: 0.9;">
+                    <i class="fa-solid fa-align-left me-2"></i>Anime Description
+                </p>
+                <p class="text-light mb-0" style="font-size: 1.1rem; line-height: 1.8; opacity: 0.95; font-weight: 300; text-shadow: 1px 1px 4px rgba(0,0,0,0.5);">
+                    {{ anime.synopsis }}
+                </p>
+            </div>
+            {% endif %}
+            
+            <!-- Rating Component -->
+            <div class="rating-component mb-5" style="max-width: 600px;">
+                <p class="text-muted small text-uppercase fw-bold mb-3" style="letter-spacing: 2px; font-size: 0.7rem; opacity: 0.7;">Your Rating</p>
+                <div class="d-flex align-items-center gap-4">
+                    <div class="d-flex gap-2" id="star-rating-container">
+                        {% for i in range(1, 11) %}
+                        <i class="fa-solid fa-star star-btn fs-4 cursor-pointer" data-value="{{ i }}" 
+                           style="color: {{ '#ffc107' if user_rating and i <= user_rating else 'rgba(255,255,255,0.1)' }}; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);"></i>
+                        {% endfor %}
+                    </div>
+                    <span class="badge bg-warning text-dark px-2 py-1 rounded-pill fw-bold" id="rating-badge" style="min-width: 40px; font-size: 0.9rem;">
+                        {{ user_rating if user_rating else '-' }}
+                    </span>
+                    <button id="submit-rating-btn" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold border-0 bg-primary bg-opacity-10" style="display: none;">Save</button>
+                </div>
+                <div id="rating-status" class="mt-2 small text-success" style="display:none; font-weight: 500;">
+                    <i class="fa-solid fa-check-circle me-1"></i> Saved!
+                </div>
+            </div>
+            
+            <div class="d-flex gap-3 mb-4">
+                <form action="{{ url_for('like_anime', anime_id=anime.mal_id) }}" method="POST">
+                    <input type="hidden" name="title" value="{{ anime.title }}">
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 py-2 fs-5 shadow-lg transition-all border-0" style="background: linear-gradient(45deg, #ff4b2b, #ff416c); min-width: 180px;" title="Add to My List">
+                        <i class="fa-solid fa-plus me-2"></i> Add to List
+                    </button>
+                </form>
+                <form action="{{ url_for('watch_anime', anime_id=anime.mal_id) }}" method="POST">
+                    <input type="hidden" name="title" value="{{ anime.title }}">
+                    <button type="submit" class="btn btn-success rounded-pill px-4 py-2 fs-5 shadow-lg transition-all border-0" style="background: linear-gradient(45deg, #11998e, #38ef7d); min-width: 180px;" title="Mark as Watched">
+                        <i class="fa-solid fa-check me-2"></i> Watched
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Other Productions in the Series (Section A) -->
+{% if franchise_animes %}
+<h4 class="text-white fw-bold mb-3 mt-5 border-top border-secondary pt-4"><i class="fa-solid fa-film text-warning me-2"></i>OTHER PRODUCTIONS IN THE SERIES</h4>
+<div class="horizontal-scroll mb-5" id="franchise-container">
+    {% for rec in franchise_animes %}
+    <div class="col">
+        <div class="card h-100 anime-card bg-transparent border-0">
+            <a href="{{ url_for('anime_detail', mal_id=rec.anime_id) }}" class="text-decoration-none">
+                <div class="anime-cover-container w-100 position-relative rounded-4 overflow-hidden" data-mal-id="{{ rec.anime_id }}" style="height: 280px; background-color: #2b2b2b; background-size: cover; background-position: center;">
+                    <div class="loading-spinner position-absolute top-50 start-50 translate-middle text-muted">
+                        <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                    </div>
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge score-badge rounded-pill px-2 py-1">
+                            <i class="fa-solid fa-star text-warning me-1"></i>{{ "%.1f"|format(rec.score) if rec.score else 'N/A' }}
+                        </span>
+                    </div>
+                    <!-- Action Overlay -->
+                    <div class="position-absolute bottom-0 start-0 w-100 p-3 card-action-btn" style="background: linear-gradient(transparent, rgba(0,0,0,0.9));">
+                        <div class="d-flex gap-2">
+                            <form action="{{ url_for('like_anime', anime_id=rec.anime_id) }}" method="POST" class="flex-fill">
+                                <input type="hidden" name="title" value="{{ rec.title }}">
+                                <button type="submit" class="btn btn-primary btn-sm w-100 rounded-pill py-2"><i class="fa-solid fa-plus me-1"></i> List</button>
+                            </form>
+                            <form action="{{ url_for('watch_anime', anime_id=rec.anime_id) }}" method="POST" class="flex-fill">
+                                <input type="hidden" name="title" value="{{ rec.title }}">
+                                <button type="submit" class="btn btn-success btn-sm w-100 rounded-pill py-2"><i class="fa-solid fa-check"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            <div class="card-body px-0 py-2">
+                <h6 class="text-white fw-bold text-truncate mb-0">
+                    <a href="{{ url_for('anime_detail', mal_id=rec.anime_id) }}" class="text-white text-decoration-none hover-primary">{{ rec.english_name if rec.english_name and rec.english_name != 'Unknown' else rec.title }}</a>
+                </h6>
+                <p class="text-muted small mb-0">{{ rec.genres.split(',')[0] if rec.genres else 'Anime' }}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Similar Animes Section (Section B) -->
+<h4 class="text-white fw-bold mb-3 mt-5 {% if not franchise_animes %}border-top border-secondary pt-4{% endif %}"><i class="fa-solid fa-link text-primary me-2"></i>SIMILAR ANIMES (Discover New Series)</h4>
+<div class="horizontal-scroll mb-5" id="recommendations-container">
+    {% if similar_animes %}
+        {% for rec in similar_animes %}
+        <div class="col">
+            <div class="card h-100 anime-card bg-transparent border-0">
+                <a href="{{ url_for('anime_detail', mal_id=rec.anime_id) }}" class="text-decoration-none">
+                    <div class="anime-cover-container w-100 position-relative rounded-4 overflow-hidden" data-mal-id="{{ rec.anime_id }}" style="height: 280px; background-color: #2b2b2b; background-size: cover; background-position: center;">
+                        <div class="loading-spinner position-absolute top-50 start-50 translate-middle text-muted">
+                            <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                        </div>
+                        <div class="position-absolute top-0 end-0 m-2">
+                            <span class="badge score-badge rounded-pill px-2 py-1">
+                                <i class="fa-solid fa-star text-warning me-1"></i>{{ "%.1f"|format(rec.score) if rec.score else 'N/A' }}
+                            </span>
+                        </div>
+                        <!-- Action Overlay -->
+                        <div class="position-absolute bottom-0 start-0 w-100 p-3 card-action-btn" style="background: linear-gradient(transparent, rgba(0,0,0,0.9));">
+                            <div class="d-flex gap-2">
+                                <form action="{{ url_for('like_anime', anime_id=rec.anime_id) }}" method="POST" class="flex-fill">
+                                    <input type="hidden" name="title" value="{{ rec.title }}">
+                                    <button type="submit" class="btn btn-primary btn-sm w-100 rounded-pill py-2"><i class="fa-solid fa-plus me-1"></i> List</button>
+                                </form>
+                                <form action="{{ url_for('watch_anime', anime_id=rec.anime_id) }}" method="POST" class="flex-fill">
+                                    <input type="hidden" name="title" value="{{ rec.title }}">
+                                    <button type="submit" class="btn btn-success btn-sm w-100 rounded-pill py-2"><i class="fa-solid fa-check"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <div class="card-body px-0 py-2">
+                    <h6 class="text-white fw-bold text-truncate mb-0">
+                        <a href="{{ url_for('anime_detail', mal_id=rec.anime_id) }}" class="text-white text-decoration-none hover-primary">{{ rec.english_name if rec.english_name and rec.english_name != 'Unknown' else rec.title }}</a>
+                    </h6>
+                    <p class="text-muted small mb-0">{{ rec.genres.split(',')[0] if rec.genres else 'Anime' }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12 text-muted p-4 bg-dark rounded border border-secondary text-center">
+            Not enough data found similar to this anime.
+        </div>
+    {% endif %}
+</div>
+
+<!-- Script to load Jikan API images with delay -->
+<script>
+const fetchWithRetry = (url, retries = 3, delayMs = 1000) =>
+    fetch(url)
+        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .catch(err => {
+            if (retries > 0) {
+                return new Promise(resolve => setTimeout(resolve, delayMs))
+                    .then(() => fetchWithRetry(url, retries - 1, delayMs * 1.5));
+            }
+            throw err;
+        });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const covers = document.querySelectorAll('.anime-cover-container');
+    covers.forEach((container, index) => {
+        const malId = container.getAttribute('data-mal-id');
+        if (malId) {
+            setTimeout(() => {
+                fetchWithRetry(`https://api.jikan.moe/v4/anime/${malId}`)
+                    .then(data => {
+                        const imgUrl = data?.data?.images?.jpg?.large_image_url;
+                        if (imgUrl) {
+                            const img = new Image();
+                            img.onload = () => {
+                                container.style.backgroundImage = `url('${imgUrl}')`;
+                            };
+                            img.src = imgUrl;
+                        } else {
+                            container.style.backgroundColor = '#1a1a2e';
+                        }
+                    })
+                    .catch(() => { container.style.backgroundColor = '#1a1a2e'; })
+                    .finally(() => {
+                        const spinner = container.querySelector('.loading-spinner');
+                        const playBtn = container.querySelector('.play-btn');
+                        if (spinner) spinner.style.display = 'none';
+                        if (playBtn) playBtn.style.display = 'flex';
+                    });
+            }, index * 500);
+        }
+    });
+});
+
+// Rating Component Script (Aesthetic Star Rating)
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.star-btn');
+    const badge = document.getElementById('rating-badge');
+    const saveBtn = document.getElementById('submit-rating-btn');
+    const status = document.getElementById('rating-status');
+    const animeId = "{{ anime.mal_id }}";
+    let selectedRating = {{ user_rating if user_rating else 0 }};
+
+    stars.forEach(star => {
+        // Hover effect
+        star.addEventListener('mouseenter', function() {
+            const val = parseInt(this.getAttribute('data-value'));
+            highlightStars(val);
+        });
+
+        star.addEventListener('mouseleave', function() {
+            highlightStars(selectedRating);
+        });
+
+        // Click effect
+        star.addEventListener('click', function() {
+            selectedRating = parseInt(this.getAttribute('data-value'));
+            badge.textContent = selectedRating;
+            saveBtn.style.display = 'inline-block';
+            highlightStars(selectedRating);
+        });
+    });
+
+    function highlightStars(count) {
+        stars.forEach((s, idx) => {
+            if (idx < count) {
+                s.style.color = '#ffc107';
+                s.style.transform = 'scale(1.2)';
+                s.style.opacity = '1';
+            } else {
+                s.style.color = 'rgba(255,255,255,0.1)';
+                s.style.transform = 'scale(1)';
+                s.style.opacity = '0.5';
+            }
+        });
+    }
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            
+            fetch('/rate_anime', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ anime_id: animeId, rating: selectedRating })
+            })
+            .then(r => r.json())
+            .then(data => {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Save';
+                if(data.success) {
+                    saveBtn.style.display = 'none';
+                    status.style.display = 'block';
+                    setTimeout(() => { status.style.display = 'none'; }, 3000);
+                }
+            })
+            .catch(err => {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Save';
+            });
+        });
+    }
+});
+</script>
+
+{% endblock %}

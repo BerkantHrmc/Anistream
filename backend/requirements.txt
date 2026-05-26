@@ -1,0 +1,10 @@
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-Bcrypt==1.0.1
+lightfm==1.17
+numpy
+scipy
+pandas
+flasgger==0.9.7.1
+psycopg2-binary

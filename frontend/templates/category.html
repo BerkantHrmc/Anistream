@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h4 class="text-white fw-bold mb-4 mt-4 border-bottom border-secondary pb-3"><i class="fa-solid fa-layer-group text-primary me-2"></i>{{ title }}</h4>
+
+<div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-4 mb-5">
+    {% if animes %}
+        {% for anime in animes %}
+        <div class="col">
+            <div class="card h-100 anime-card bg-transparent border-0">
+                <a href="{{ url_for('anime_detail', mal_id=anime.mal_id) }}" class="text-decoration-none">
+                    <div class="anime-cover-container w-100 position-relative rounded-4 overflow-hidden" data-mal-id="{{ anime.mal_id }}" style="height: 320px; background-color: #2b2b2b; background-size: cover; background-position: center;">
+                        <div class="loading-spinner position-absolute top-50 start-50 translate-middle text-muted">
+                            <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                        </div>
+                        <!-- Floating Badge -->
+                        <div class="position-absolute top-0 end-0 m-2">
+                            <span class="badge score-badge rounded-pill px-2 py-1">
+                                <i class="fa-solid fa-star text-warning me-1"></i>{{ "%.1f"|format(anime.score) if anime.score else 'N/A' }}
+                            </span>
+                        </div>
+                        <!-- Action Overlay (Appear on hover) -->
+                        <div class="position-absolute bottom-0 start-0 w-100 p-3 card-action-btn" style="background: linear-gradient(transparent, rgba(0,0,0,0.9));">
+                            <div class="d-flex gap-2">
+                                <form action="{{ url_for('like_anime', anime_id=anime.mal_id) }}" method="POST" class="flex-fill">
+                                    <input type="hidden" name="title" value="{{ anime.title }}">
+                                    <button type="submit" class="btn btn-primary btn-sm w-100 rounded-pill py-2"><i class="fa-solid fa-plus me-1"></i> List</button>
+                                </form>
+                                <form action="{{ url_for('watch_anime', anime_id=anime.mal_id) }}" method="POST" class="flex-fill">
+                                    <input type="hidden" name="title" value="{{ anime.title }}">
+                                    <button type="submit" class="btn btn-success btn-sm w-100 rounded-pill py-2"><i class="fa-solid fa-check"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <div class="card-body px-0 py-3">
+                    <h6 class="text-white fw-bold text-truncate mb-1">
+                        <a href="{{ url_for('anime_detail', mal_id=anime.mal_id) }}" class="text-white text-decoration-none transition-all hover-primary">
+                            {{ anime.english_name if anime.english_name and anime.english_name != 'Unknown' else anime.title }}
+                        </a>
+                    </h6>
+                    <p class="text-muted small mb-0 text-truncate">
+                        {{ anime.genres.replace(',', ' • ') if anime.genres else 'Anime' }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12 text-muted p-4 bg-dark rounded border border-secondary text-center w-100">
+            No data found in this category yet.
+        </div>
+    {% endif %}
+</div>
+
+<!-- Scripts for dynamic images (To fetch high-res posters from Jikan API since CSV lacks URLs) -->
+<script>
+const fetchWithRetry = (url, retries = 3, delayMs = 1000) =>
+    fetch(url)
+        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .catch(err => {
+            if (retries > 0) {
+                return new Promise(resolve => setTimeout(resolve, delayMs))
+                    .then(() => fetchWithRetry(url, retries - 1, delayMs * 1.5));
+            }
+            throw err;
+        });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const covers = document.querySelectorAll('.anime-cover-container');
+    covers.forEach((container, index) => {
+        const malId = container.getAttribute('data-mal-id');
+        if (malId) {
+            setTimeout(() => {
+                fetchWithRetry(`https://api.jikan.moe/v4/anime/${malId}`)
+                    .then(data => {
+                        const imgUrl = data?.data?.images?.jpg?.large_image_url;
+                        if (imgUrl) {
+                            const img = new Image();
+                            img.onload = () => {
+                                container.style.backgroundImage = `url('${imgUrl}')`;
+                            };
+                            img.src = imgUrl;
+                        } else {
+                            container.style.backgroundColor = '#1a1a2e';
+                        }
+                    })
+                    .catch(() => { container.style.backgroundColor = '#1a1a2e'; })
+                    .finally(() => {
+                        const spinner = container.querySelector('.loading-spinner');
+                        if (spinner) spinner.style.display = 'none';
+                    });
+            }, index * 500);
+        }
+    });
+});
+</script>
+
+{% endblock %}

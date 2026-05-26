@@ -1,0 +1,315 @@
+:root {
+    --primary-color: #9d4edd;
+    --secondary-color: #3c096c;
+    --dark-bg: #0a0a0f;
+    --card-bg: rgba(20, 20, 30, 0.6);
+    --text-color: #f8f9fa;
+    --text-muted: #adb5bd;
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+body {
+    background-color: var(--dark-bg);
+    /* A cinematic purple/blue background */
+    background: radial-gradient(circle at top, #1b1035, #0a0a0f 70%);
+    background-attachment: fixed;
+    color: var(--text-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Glassmorphism utility */
+.glass {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+}
+
+/* Navbar styling */
+.navbar {
+    background: rgba(10, 10, 15, 0.8) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.navbar-brand {
+    font-weight: 800;
+    letter-spacing: 1px;
+    background: linear-gradient(90deg, #e0aaff, #9d4edd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-link {
+    color: #e0e0e0 !important;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    margin-right: 15px;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--primary-color) !important;
+}
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    border-radius: 15px;
+    /* overflow: hidden;  <-- Bu satırı sığmama sorunu için etkisiz hale getiriyoruz */
+    margin-bottom: 3rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    background-color: var(--dark-bg);
+}
+
+.hero-img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    object-position: top;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, rgba(10,10,15,1) 0%, rgba(10,10,15,0.7) 40%, rgba(10,10,15,0) 100%),
+                linear-gradient(0deg, rgba(10,10,15,1) 0%, rgba(10,10,15,0) 30%);
+    display: flex;
+    align-items: center;
+    padding: 3rem;
+    z-index: 1;
+}
+
+/* Cards */
+.anime-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.anime-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 120px;
+    position: relative;
+    z-index: 2;
+}
+
+.anime-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(157, 78, 221, 0.2);
+    border-color: rgba(157, 78, 221, 0.5);
+}
+
+.anime-card .card-img-top {
+    border-bottom: 1px solid var(--glass-border);
+}
+
+/* Horizontal scrolling row */
+.horizontal-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding-bottom: 2rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) transparent;
+    padding-left: 5px;
+    padding-top: 10px;
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb {
+    background-color: var(--primary-color);
+    border-radius: 10px;
+}
+
+.horizontal-scroll .col {
+    flex: 0 0 auto;
+    width: 220px;
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(45deg, #7b2cbf, #9d4edd);
+    border: none;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    transition: opacity 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #9d4edd, #c77dff);
+}
+
+.category-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    border-radius: 12px;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.category-btn i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #e0aaff;
+}
+
+.category-btn:hover {
+    background: rgba(157, 78, 221, 0.2);
+    transform: translateY(-5px);
+    color: #fff;
+}
+
+/* Inputs */
+.form-control, .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: #fff;
+}
+
+.search-input {
+    border-radius: 20px;
+    padding-left: 20px;
+}
+
+/* Text Truncation Utilities */
+.text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.text-truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.extra-small {
+    font-size: 0.75rem;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.list-item-hover {
+    transition: background-color 0.2s ease;
+}
+
+.list-item-hover:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.title-link {
+    transition: color 0.2s ease;
+}
+
+.list-item-hover:hover .title-link {
+    color: var(--primary-color) !important;
+    text-decoration: underline;
+}
+
+.hover-primary-bg:hover {
+    background-color: rgba(0, 123, 255, 0.1) !important;
+    border-left: 4px solid var(--primary-color) !important;
+}
+
+/* Home Page Redesign Styles */
+.anime-card {
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    z-index: 1;
+}
+
+.anime-card:hover {
+    transform: translateY(-10px);
+    z-index: 10;
+}
+
+.anime-card:hover .anime-cover-container {
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+}
+
+.score-badge {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.section-title {
+    position: relative;
+    padding-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+.horizontal-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 15px 0;
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.hero-btn {
+    transition: all 0.3s ease;
+    border: none;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.hero-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(123, 44, 191, 0.4);
+}
+
+.card-action-btn {
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.anime-card:hover .card-action-btn {
+    opacity: 1;
+}
+
+.hover-danger:hover {
+    color: #ff4b2b !important;
+    transform: scale(1.2);
+    transition: all 0.2s ease;
+}

@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="profile-header mb-5 p-5 rounded-5 border border-secondary bg-dark bg-opacity-25 shadow-lg" style="backdrop-filter: blur(20px);">
+    <div class="row align-items-center">
+        <div class="col-auto">
+            <div class="rounded-circle bg-primary bg-opacity-75 text-white d-flex align-items-center justify-content-center shadow-lg" style="width: 120px; height: 120px; font-size: 3.5rem; border: 4px solid rgba(255,255,255,0.1);">
+                {{ user.username[0]|upper }}
+            </div>
+        </div>
+        <div class="col ms-md-4 mt-3 mt-md-0">
+            <span class="badge bg-primary rounded-pill mb-2 px-3 py-1 fw-bold" style="letter-spacing: 1px; font-size: 0.7rem;">ANIME ENTHUSIAST</span>
+            <h1 class="display-4 fw-bold text-white mb-1">{{ user.username }}</h1>
+            <p class="text-muted fs-5 mb-0"><i class="fa-solid fa-envelope me-2"></i>{{ user.email }}</p>
+        </div>
+        <div class="col-lg-auto mt-4 mt-lg-0">
+            <div class="d-flex gap-4">
+                <div class="text-center">
+                    <h3 class="fw-bold text-white mb-0">{{ user.liked_anime.count() }}</h3>
+                    <small class="text-muted text-uppercase small" style="letter-spacing: 1px;">Liked</small>
+                </div>
+                <div class="text-center px-4 border-start border-end border-secondary border-opacity-25">
+                    <h3 class="fw-bold text-white mb-0">{{ user.watched_anime.count() }}</h3>
+                    <small class="text-muted text-uppercase small" style="letter-spacing: 1px;">Watched</small>
+                </div>
+                <div class="text-center">
+                    <h3 class="fw-bold text-white mb-0">{{ rated_animes|length }}</h3>
+                    <small class="text-muted text-uppercase small" style="letter-spacing: 1px;">Rated</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <!-- Sidebar: Preferences -->
+    <div class="col-lg-4">
+        <div class="card bg-dark bg-opacity-50 border-secondary rounded-4 h-100 shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary border-opacity-25">
+                    <h5 class="text-primary text-uppercase small fw-bold mb-0" style="letter-spacing: 2px;">Your Preferences</h5>
+                    <a href="{{ url_for('survey') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3"><i class="fa-solid fa-pen-to-square me-1"></i>Edit</a>
+                </div>
+                
+                <div class="preference-item mb-4">
+                    <small class="text-muted text-uppercase d-block mb-3" style="font-size: 0.65rem; letter-spacing: 1.5px; font-weight: 700;">Favorite Genres</small>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if user.survey and user.survey.genres %}
+                            {% for genre in user.survey.genres.split(',') %}
+                            <span class="badge bg-dark bg-opacity-50 border border-secondary text-light px-3 py-2 rounded-3 small">{{ genre }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted small fst-italic">No genres selected yet</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-4 mt-2">
+                    <div class="col-6">
+                        <small class="text-muted text-uppercase d-block mb-1" style="font-size: 0.65rem; letter-spacing: 1.5px; font-weight: 700;">Min Score</small>
+                        <p class="text-white fs-5 fw-bold mb-0"><i class="fa-solid fa-star text-warning me-1 small"></i>{{ user.survey.min_score or 'N/A' }}</p>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted text-uppercase d-block mb-1" style="font-size: 0.65rem; letter-spacing: 1.5px; font-weight: 700;">Max Episodes</small>
+                        <p class="text-white fs-5 fw-bold mb-0"><i class="fa-solid fa-layer-group text-info me-1 small"></i>{{ user.survey.max_episodes or 'N/A' }}</p>
+                    </div>
+                    <div class="col-12">
+                        <small class="text-muted text-uppercase d-block mb-1" style="font-size: 0.65rem; letter-spacing: 1.5px; font-weight: 700;">Preferred Year</small>
+                        <p class="text-white fs-5 fw-bold mb-0"><i class="fa-solid fa-calendar-days text-primary me-1 small"></i>{{ user.survey.preferred_year or 'N/A' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Lists -->
+    <div class="col-lg-8">
+        <ul class="nav nav-pills mb-4 bg-dark bg-opacity-50 p-2 rounded-pill border border-secondary d-inline-flex shadow-sm" id="profileTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-pill px-4 py-2 fw-bold" id="liked-tab" data-bs-toggle="pill" data-bs-target="#liked" type="button" role="tab">
+                    <i class="fa-solid fa-heart me-2"></i>Liked
+                </button>
+            </li>
+            <li class="nav-item ms-2" role="presentation">
+                <button class="nav-link rounded-pill px-4 py-2 fw-bold" id="watched-tab" data-bs-toggle="pill" data-bs-target="#watched" type="button" role="tab">
+                    <i class="fa-solid fa-clock me-2"></i>Watched
+                </button>
+            </li>
+            <li class="nav-item ms-2" role="presentation">
+                <button class="nav-link rounded-pill px-4 py-2 fw-bold" id="rated-tab" data-bs-toggle="pill" data-bs-target="#rated" type="button" role="tab">
+                    <i class="fa-solid fa-star me-2"></i>Rated
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="profileTabsContent">
+            <!-- Liked Tab -->
+            <div class="tab-pane fade show active" id="liked" role="tabpanel">
+                <div class="card bg-dark bg-opacity-25 border-secondary rounded-4 overflow-hidden shadow-sm">
+                    <div class="list-group list-group-flush">
+                        {% for like in user.liked_anime %}
+                        <div class="list-group-item bg-transparent text-light border-secondary border-opacity-25 py-3 px-4 d-flex justify-content-between align-items-center transition-all hover-primary-bg">
+                            <a href="{{ url_for('anime_detail', mal_id=like.anime_id) }}" class="text-decoration-none text-light fw-bold flex-grow-1">
+                                {{ like.title }}
+                            </a>
+                            <form action="{{ url_for('delete_like', anime_id=like.anime_id) }}" method="POST" onsubmit="return confirm('Remove from Liked list?');">
+                                <button type="submit" class="btn btn-link text-muted p-0 ms-3 hover-danger"><i class="fa-solid fa-trash-can"></i></button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <div class="p-5 text-center">
+                            <i class="fa-solid fa-heart-crack fa-3x text-muted mb-3 opacity-25"></i>
+                            <p class="text-muted mb-0">Your liked list is empty.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Watched Tab -->
+            <div class="tab-pane fade" id="watched" role="tabpanel">
+                <div class="card bg-dark bg-opacity-25 border-secondary rounded-4 overflow-hidden shadow-sm">
+                    <div class="list-group list-group-flush">
+                        {% for watch in user.watched_anime %}
+                        <div class="list-group-item bg-transparent text-light border-secondary border-opacity-25 py-3 px-4 d-flex justify-content-between align-items-center transition-all hover-primary-bg">
+                            <a href="{{ url_for('anime_detail', mal_id=watch.anime_id) }}" class="text-decoration-none text-light fw-bold flex-grow-1">
+                                {{ watch.title }}
+                            </a>
+                            <form action="{{ url_for('delete_watch', anime_id=watch.anime_id) }}" method="POST" onsubmit="return confirm('Remove from Watched list?');">
+                                <button type="submit" class="btn btn-link text-muted p-0 ms-3 hover-danger"><i class="fa-solid fa-trash-can"></i></button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <div class="p-5 text-center">
+                            <i class="fa-solid fa-clock-rotate-left fa-3x text-muted mb-3 opacity-25"></i>
+                            <p class="text-muted mb-0">No watched animes yet.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rated Tab -->
+            <div class="tab-pane fade" id="rated" role="tabpanel">
+                <div class="card bg-dark bg-opacity-25 border-secondary rounded-4 overflow-hidden shadow-sm">
+                    <div class="list-group list-group-flush">
+                        {% for item in rated_animes %}
+                        <div class="list-group-item bg-transparent text-light border-secondary border-opacity-25 py-3 px-4 d-flex justify-content-between align-items-center">
+                            <div class="flex-grow-1">
+                                {% if item.anime %}
+                                <a href="{{ url_for('anime_detail', mal_id=item.anime.mal_id) }}" class="text-decoration-none text-light fw-bold hover-primary">
+                                    {{ item.anime.english_name if item.anime.english_name and item.anime.english_name != 'Unknown' else item.anime.title }}
+                                </a>
+                                {% else %}
+                                <span class="fw-bold">Anime #{{ item.anime_id }}</span>
+                                {% endif %}
+                                <br>
+                                <small class="text-muted small">{{ item.timestamp.strftime('%d %B %Y') if item.timestamp else '' }}</small>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <a href="{{ url_for('anime_detail', mal_id=item.anime_id) }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" title="Edit Rating">
+                                    <i class="fa-solid fa-pen-to-square me-1"></i> Edit
+                                </a>
+                                <div class="badge bg-warning text-dark rounded-pill px-3 py-2 fw-bold shadow-sm">
+                                    <i class="fa-solid fa-star me-1"></i>{{ item.rating }}/10
+                                </div>
+                                <form action="{{ url_for('delete_rating', anime_id=item.anime_id) }}" method="POST" onsubmit="return confirm('Delete this rating?');">
+                                    <button type="submit" class="btn btn-link text-muted p-0 hover-danger"><i class="fa-solid fa-trash-can"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="p-5 text-center">
+                            <i class="fa-solid fa-star-half-stroke fa-3x text-muted mb-3 opacity-25"></i>
+                            <p class="text-muted mb-0">You haven't rated any animes yet.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

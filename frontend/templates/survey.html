@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        <div class="card bg-dark bg-opacity-50 border-secondary shadow-lg mt-4" style="backdrop-filter: blur(15px); border-radius: 20px;">
+            <div class="card-body p-5">
+                <div class="text-center mb-5">
+                    <span class="badge bg-primary bg-opacity-25 text-primary px-3 py-2 rounded-pill mb-3" style="letter-spacing: 2px; font-weight: 600;">PERSONALIZATION</span>
+                    <h1 class="display-5 fw-bold text-white mb-3">Start Survey</h1>
+                    <p class="text-muted fs-5 mx-auto" style="max-width: 600px;">Tell us what you love, and we'll craft the perfect anime recommendations for you.</p>
+                </div>
+                
+                <form method="POST">
+                    <div class="mb-5">
+                        <label class="form-label text-primary text-uppercase small fw-bold mb-4" style="letter-spacing: 2px;">
+                            <i class="fa-solid fa-tags me-2"></i>Select Your Favorite Genres
+                        </label>
+                        <div class="row g-3">
+                            {% for genre in ['Action', 'Romance', 'Fantasy', 'Sci-Fi', 'Comedy', 'Drama', 'Slice of Life', 'Horror', 'Sports'] %}
+                            <div class="col-6 col-md-4">
+                                <input type="checkbox" name="genres" value="{{ genre }}" class="btn-check" id="genre_{{ genre }}" autocomplete="off">
+                                <label class="btn btn-outline-secondary w-100 py-3 rounded-4 transition-all hover-primary" for="genre_{{ genre }}">
+                                    <div class="d-flex flex-column align-items-center gap-2">
+                                        {% if genre == 'Action' %}<i class="fa-solid fa-fire-flame-curved"></i>
+                                        {% elif genre == 'Romance' %}<i class="fa-solid fa-heart"></i>
+                                        {% elif genre == 'Fantasy' %}<i class="fa-solid fa-wand-sparkles"></i>
+                                        {% elif genre == 'Sci-Fi' %}<i class="fa-solid fa-rocket"></i>
+                                        {% elif genre == 'Comedy' %}<i class="fa-solid fa-face-laugh-beam"></i>
+                                        {% elif genre == 'Drama' %}<i class="fa-solid fa-masks-theater"></i>
+                                        {% elif genre == 'Slice of Life' %}<i class="fa-solid fa-mug-hot"></i>
+                                        {% elif genre == 'Horror' %}<i class="fa-solid fa-ghost"></i>
+                                        {% elif genre == 'Sports' %}<i class="fa-solid fa-volleyball"></i>
+                                        {% endif %}
+                                        <span>{{ genre }}</span>
+                                    </div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-12">
+                             <label class="form-label text-primary text-uppercase small fw-bold mb-3" style="letter-spacing: 2px;">
+                                <i class="fa-solid fa-sliders me-2"></i>Fine-Tune Your Results
+                            </label>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating bg-transparent">
+                                <input type="number" step="0.1" min="1" max="10" name="min_score" class="form-control bg-dark bg-opacity-50 text-light border-secondary rounded-4" id="minScore" placeholder="7.5">
+                                <label for="minScore" class="text-muted">Min Score (1-10)</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="number" name="max_episodes" class="form-control bg-dark bg-opacity-50 text-light border-secondary rounded-4" id="maxEpisodes" placeholder="24">
+                                <label for="maxEpisodes" class="text-muted">Max Episodes</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-floating">
+                                <input type="number" name="preferred_year" class="form-control bg-dark bg-opacity-50 text-light border-secondary rounded-4" id="prefYear" placeholder="2020">
+                                <label for="prefYear" class="text-muted">Preferred Year</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 py-3 rounded-pill shadow-lg fw-bold transition-all hover-scale">
+                        Save Preferences & Explore <i class="fa-solid fa-arrow-right ms-2"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

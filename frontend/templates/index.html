@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Hero Section (Dynamic from Database) -->
+{% if hero_anime %}
+<div class="hero-section mb-5 position-relative anime-cover-container rounded-5 overflow-hidden" data-mal-id="{{ hero_anime.anime_id }}" style="min-height: 600px; background-color: #1a1a1a; background-size: cover; background-position: center 20%;">
+    <div class="loading-spinner position-absolute top-50 start-50 translate-middle text-muted">
+        <i class="fa-solid fa-spinner fa-spin fa-3x"></i>
+    </div>
+    <div class="hero-overlay d-flex flex-column justify-content-center p-5 h-100">
+        <div class="content-wrapper p-md-4" style="max-width: 900px; position: relative; z-index: 2;">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="badge bg-primary bg-opacity-75 px-3 py-2 rounded-pill" style="letter-spacing: 1px;">FEATURED PICK</span>
+                <span class="text-warning fw-bold fs-5"><i class="fa-solid fa-star me-1"></i> {{ "%.1f"|format(hero_anime.score) if hero_anime.score else 'N/A' }}</span>
+            </div>
+            <h1 class="display-2 fw-bold text-white mb-3" style="text-shadow: 2px 2px 20px rgba(0,0,0,1); line-height: 1.1;">{{ hero_anime.english_name if hero_anime.english_name and hero_anime.english_name != 'Unknown' else hero_anime.title }}</h1>
+            
+            <div class="d-flex flex-wrap align-items-center mb-4 text-light gap-3 opacity-75">
+                {% for genre in (hero_anime.genres.split(',')[:3] if hero_anime.genres else []) %}
+                <span class="small"><i class="fa-solid fa-circle text-primary me-2" style="font-size: 0.5rem;"></i>{{ genre.strip() }}</span>
+                {% endfor %}
+            </div>
+
+            {% if hero_anime.synopsis %}
+            <p class="text-light fs-5 mb-5 d-none d-md-block text-truncate-3" style="max-width: 700px; line-height: 1.6; opacity: 0.9; text-shadow: 1px 1px 10px rgba(0,0,0,0.5);">
+                {{ hero_anime.synopsis }}
+            </p>
+            {% endif %}
+
+            <div class="d-flex gap-3">
+                <a href="{{ url_for('anime_detail', mal_id=hero_anime.anime_id) }}" class="btn btn-primary btn-lg rounded-pill px-5 py-3 hero-btn shadow-lg" style="background: linear-gradient(45deg, var(--primary-color), #4361ee);">
+                    <i class="fa-solid fa-play me-2"></i> VIEW DETAILS
+                </a>
+                <form action="{{ url_for('like_anime', anime_id=hero_anime.anime_id) }}" method="POST">
+                    <input type="hidden" name="title" value="{{ hero_anime.title }}">
+                    <button type="submit" class="btn btn-outline-light btn-lg rounded-pill px-4 py-3 hero-btn">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="hero-section mb-5 d-flex align-items-center justify-content-center rounded-5" style="height: 300px; background: #1a1a1a;">
+    <h3 class="text-muted">No recommendations found. Please complete your survey.</h3>
+</div>
+{% endif %}
+
+<!-- RECOMMENDED FOR YOU -->
+<div class="mb-5">
+    <h3 class="text-white fw-bold mb-4 section-title">Recommended For You</h3>
+    <div class="horizontal-scroll" id="recommendations-container">
+        {% if recommendations %}
+            {% for rec in recommendations %}
+            <div class="col">
+                <div class="card h-100 anime-card bg-transparent border-0">
+                    <a href="{{ url_for('anime_detail', mal_id=rec.anime_id) }}" class="text-decoration-none">
+                        <div class="anime-cover-container w-100 position-relative rounded-4 overflow-hidden" data-mal-id="{{ rec.anime_id }}" style="height: 350px; background-color: #2b2b2b; background-size: cover; background-position: center;">
+                            <div class="loading-spinner position-absolute top-50 start-50 translate-middle text-muted">
+                                <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                            </div>
+                            <!-- Floating Badge -->
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge score-badge rounded-pill px-2 py-1">
+                                    <i class="fa-solid fa-star text-warning me-1"></i>{{ "%.1f"|format(rec.score) if rec.score else 'N/A' }}
+                                </span>
+                            </div>
+                            <!-- Action Overlay (Appear on hover) -->
+                            <div class="position-absolute bottom-0 start-0 w-100 p-3 card-action-btn" style="background: linear-gradient(transparent, rgba(0,0,0,0.9));">
+                                <div class="d-flex gap-2">
+                                    <form action="{{ url_for('like_anime', anime_id=rec.anime_id) }}" method="POST" class="flex-fill">
+                                        <input type="hidden" name="title" value="{{ rec.title }}">
+                                        <button type="submit" class="btn btn-primary btn-sm w-100 rounded-pill py-2"><i class="fa-solid fa-plus me-1"></i> List</button>
+                                    </form>
+                                    <form action="{{ url_for('watch_anime', anime_id=rec.anime_id) }}" method="POST" class="flex-fill">
+                                        <input type="hidden" name="title" value="{{ rec.title }}">
+                                        <button type="submit" class="btn btn-success btn-sm w-100 rounded-pill py-2"><i class="fa-solid fa-check"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="card-body px-0 py-3">
+                        <h6 class="text-white fw-bold text-truncate mb-1">
+                            <a href="{{ url_for('anime_detail', mal_id=rec.anime_id) }}" class="text-white text-decoration-none transition-all hover-primary">
+                                {{ rec.english_name if rec.english_name and rec.english_name != 'Unknown' else rec.title }}
+                            </a>
+                        </h6>
+                        <p class="text-muted small mb-0 text-truncate">{{ rec.genres.replace(',', ' • ') if rec.genres else 'Anime' }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-muted p-5 bg-dark bg-opacity-50 rounded-4 border border-secondary text-center">
+                <i class="fa-solid fa-wand-magic-sparkles fa-3x mb-3 opacity-25"></i>
+                <p>No recommendations yet. Complete the survey to get started!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- UNRATED HIDDEN GEMS -->
+{% if unrated_recommendations %}
+<div class="mb-5">
+    <h3 class="text-white fw-bold mb-4 section-title">Unrated Hidden Gems</h3>
+    <div class="horizontal-scroll" id="unrated-container">
+        {% for rec in unrated_recommendations %}
+        <div class="col">
+            <div class="card h-100 anime-card bg-transparent border-0">
+                <a href="{{ url_for('anime_detail', mal_id=rec.anime_id) }}" class="text-decoration-none">
+                    <div class="anime-cover-container w-100 position-relative rounded-4 overflow-hidden" data-mal-id="{{ rec.anime_id }}" style="height: 350px; background-color: #2b2b2b; background-size: cover; background-position: center;">
+                        <div class="loading-spinner position-absolute top-50 start-50 translate-middle text-muted">
+                            <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                        </div>
+                        <!-- Floating Badge -->
+                        <div class="position-absolute top-0 end-0 m-2">
+                            <span class="badge bg-secondary bg-opacity-75 rounded-pill px-2 py-1 border border-secondary">
+                                <i class="fa-solid fa-star-half-stroke me-1"></i>Unrated
+                            </span>
+                        </div>
+                        <!-- Action Overlay -->
+                        <div class="position-absolute bottom-0 start-0 w-100 p-3 card-action-btn" style="background: linear-gradient(transparent, rgba(0,0,0,0.9));">
+                            <div class="d-flex gap-2">
+                                <form action="{{ url_for('like_anime', anime_id=rec.anime_id) }}" method="POST" class="flex-fill">
+                                    <input type="hidden" name="title" value="{{ rec.title }}">
+                                    <button type="submit" class="btn btn-primary btn-sm w-100 rounded-pill py-2"><i class="fa-solid fa-plus me-1"></i> List</button>
+                                </form>
+                                <form action="{{ url_for('watch_anime', anime_id=rec.anime_id) }}" method="POST" class="flex-fill">
+                                    <input type="hidden" name="title" value="{{ rec.title }}">
+                                    <button type="submit" class="btn btn-success btn-sm w-100 rounded-pill py-2"><i class="fa-solid fa-check"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <div class="card-body px-0 py-3">
+                    <h6 class="text-white fw-bold text-truncate mb-1">
+                        <a href="{{ url_for('anime_detail', mal_id=rec.anime_id) }}" class="text-white text-decoration-none transition-all hover-primary">
+                            {{ rec.english_name if rec.english_name and rec.english_name != 'Unknown' else rec.title }}
+                        </a>
+                    </h6>
+                    <p class="text-muted small mb-0 text-truncate">{{ rec.genres.replace(',', ' • ') if rec.genres else 'Anime' }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if because_you_liked %}
+    {% for group in because_you_liked %}
+    <div class="mb-5">
+        <h3 class="text-white fw-bold mb-4 section-title">
+            Because you liked <span class="text-primary">&ldquo;{{ group.source_title }}&rdquo;</span>
+        </h3>
+        <div class="horizontal-scroll">
+            {% for rec in group.anime_list %}
+            <div class="col">
+                <div class="card h-100 anime-card bg-transparent border-0">
+                    <a href="{{ url_for('anime_detail', mal_id=rec.anime_id) }}" class="text-decoration-none">
+                        <div class="anime-cover-container w-100 position-relative rounded-4 overflow-hidden" data-mal-id="{{ rec.anime_id }}" style="height: 350px; background-color: #2b2b2b; background-size: cover; background-position: center;">
+                            <div class="loading-spinner position-absolute top-50 start-50 translate-middle text-muted">
+                                <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                            </div>
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge score-badge rounded-pill px-2 py-1">
+                                    <i class="fa-solid fa-star text-warning me-1"></i>{{ "%.1f"|format(rec.score) if rec.score else 'N/A' }}
+                                </span>
+                            </div>
+                            <!-- Action Overlay -->
+                            <div class="position-absolute bottom-0 start-0 w-100 p-3 card-action-btn" style="background: linear-gradient(transparent, rgba(0,0,0,0.9));">
+                                <div class="d-flex gap-2">
+                                    <form action="{{ url_for('like_anime', anime_id=rec.anime_id) }}" method="POST" class="flex-fill">
+                                        <input type="hidden" name="title" value="{{ rec.title }}">
+                                        <button type="submit" class="btn btn-primary btn-sm w-100 rounded-pill py-2"><i class="fa-solid fa-plus me-1"></i> List</button>
+                                    </form>
+                                    <form action="{{ url_for('watch_anime', anime_id=rec.anime_id) }}" method="POST" class="flex-fill">
+                                        <input type="hidden" name="title" value="{{ rec.title }}">
+                                        <button type="submit" class="btn btn-success btn-sm w-100 rounded-pill py-2"><i class="fa-solid fa-check"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="card-body px-0 py-3">
+                        <h6 class="text-white fw-bold text-truncate mb-1">
+                            <a href="{{ url_for('anime_detail', mal_id=rec.anime_id) }}" class="text-white text-decoration-none hover-primary">
+                                {{ rec.english_name if rec.english_name and rec.english_name != 'Unknown' else rec.title }}
+                            </a>
+                        </h6>
+                        <p class="text-muted small mb-0 text-truncate">{{ rec.genres.replace(',', ' • ') if rec.genres else 'Anime' }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+
+<!-- MOST WATCHED / LEGENDS -->
+<div class="mb-5">
+    <h3 class="text-white fw-bold mb-4 section-title">All Time Masterpieces</h3>
+    <div class="horizontal-scroll" id="top-animes-container">
+        {% if top_animes %}
+            {% for anime in top_animes %}
+            <div class="col">
+                <div class="card h-100 anime-card bg-transparent border-0">
+                    <a href="{{ url_for('anime_detail', mal_id=anime.mal_id) }}" class="text-decoration-none">
+                        <div class="anime-cover-container w-100 position-relative rounded-4 overflow-hidden" data-mal-id="{{ anime.mal_id }}" style="height: 350px; background-color: #2b2b2b; background-size: cover; background-position: center;">
+                            <div class="loading-spinner position-absolute top-50 start-50 translate-middle text-muted">
+                                <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                            </div>
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge score-badge rounded-pill px-2 py-1">
+                                    <i class="fa-solid fa-star text-warning me-1"></i>{{ "%.1f"|format(anime.score) if anime.score else 'N/A' }}
+                                </span>
+                            </div>
+                            <!-- Action Overlay -->
+                            <div class="position-absolute bottom-0 start-0 w-100 p-3 card-action-btn" style="background: linear-gradient(transparent, rgba(0,0,0,0.9));">
+                                <div class="d-flex gap-2">
+                                    <form action="{{ url_for('like_anime', anime_id=anime.mal_id) }}" method="POST" class="flex-fill">
+                                        <input type="hidden" name="title" value="{{ anime.title }}">
+                                        <button type="submit" class="btn btn-primary btn-sm w-100 rounded-pill py-2"><i class="fa-solid fa-plus me-1"></i> List</button>
+                                    </form>
+                                    <form action="{{ url_for('watch_anime', anime_id=anime.mal_id) }}" method="POST" class="flex-fill">
+                                        <input type="hidden" name="title" value="{{ anime.title }}">
+                                        <button type="submit" class="btn btn-success btn-sm w-100 rounded-pill py-2"><i class="fa-solid fa-check"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- Large Rank Number -->
+                            <div class="position-absolute top-0 start-0 m-0 p-3 opacity-25" style="font-size: 5rem; font-weight: 900; line-height: 1; color: white;">{{ loop.index }}</div>
+                        </div>
+                    </a>
+                    <div class="card-body px-0 py-3">
+                        <h6 class="text-white fw-bold text-truncate mb-1">
+                            <a href="{{ url_for('anime_detail', mal_id=anime.mal_id) }}" class="text-white text-decoration-none hover-primary">
+                                {{ anime.english_name if anime.english_name and anime.english_name != 'Unknown' else anime.title }}
+                            </a>
+                        </h6>
+                        <p class="text-muted small mb-0 text-truncate">{{ anime.genres.replace(',', ' • ') if anime.genres else 'Anime' }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Scripts for dynamic images (To fetch high-res posters from Jikan API since CSV lacks URLs) -->
+<script>
+const fetchWithRetry = (url, retries = 3, delayMs = 1000) =>
+    fetch(url)
+        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .catch(err => {
+            if (retries > 0) {
+                return new Promise(resolve => setTimeout(resolve, delayMs))
+                    .then(() => fetchWithRetry(url, retries - 1, delayMs * 1.5));
+            }
+            throw err;
+        });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const covers = document.querySelectorAll('.anime-cover-container');
+    covers.forEach((container, index) => {
+        const malId = container.getAttribute('data-mal-id');
+        if (malId) {
+            setTimeout(() => {
+                fetchWithRetry(`https://api.jikan.moe/v4/anime/${malId}`)
+                    .then(data => {
+                        const imgUrl = data?.data?.images?.jpg?.large_image_url;
+                        if (imgUrl) {
+                            const img = new Image();
+                            img.onload = () => {
+                                container.style.backgroundImage = `url('${imgUrl}')`;
+                            };
+                            img.src = imgUrl;
+                        } else {
+                            container.style.backgroundColor = '#1a1a2e';
+                        }
+                    })
+                    .catch(() => { container.style.backgroundColor = '#1a1a2e'; })
+                    .finally(() => {
+                        const spinner = container.querySelector('.loading-spinner');
+                        const playBtn = container.querySelector('.play-btn');
+                        if (spinner) spinner.style.display = 'none';
+                        if (playBtn) playBtn.style.display = 'flex';
+                    });
+            }, index * 500); // 500ms delay to stay well within 3 req/sec limit
+        }
+    });
+});
+</script>
+
+{% endblock %}
